@@ -100,6 +100,84 @@ namespace Actividad3LengProg3.Controllers
             return View(_estudiantes);
         }
 
+        public IActionResult Editar(string matricula)
+        {
+            if (string.IsNullOrEmpty(matricula))
+                return RedirectToAction(nameof(Lista));
 
+            var estudiante = _estudiantes.FirstOrDefault(e => e.Matricula.Equals(matricula, StringComparison.OrdinalIgnoreCase));
+            if (estudiante == null)
+            {
+                TempData["Error"] = "Estudiante no encontrado.";
+                return RedirectToAction(nameof(Lista));
+            }
+
+            ViewBag.Carreras = GetCarreras();
+            ViewBag.Recintos = GetRecintos();
+            ViewBag.Generos = GetGeneros();
+            ViewBag.Turnos = GetTurnos();
+
+            return View(estudiante);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Editar(EstudianteViewModel estudiante)
+        {
+            ViewBag.Carreras = GetCarreras();
+            ViewBag.Recintos = GetRecintos();
+            ViewBag.Generos = GetGeneros();
+            ViewBag.Turnos = GetTurnos();
+
+            if (!ModelState.IsValid)
+            {
+                return View(estudiante);
+            }
+
+            var existente = _estudiantes.FirstOrDefault(e => e.Matricula.Equals(estudiante.Matricula, StringComparison.OrdinalIgnoreCase));
+            if (existente == null)
+            {
+                ModelState.AddModelError(string.Empty, "No se encontró el estudiante para actualizar.");
+                return View(estudiante);
+            }
+
+            existente.NombreCompleto = estudiante.NombreCompleto;
+            existente.Carrera = estudiante.Carrera;
+            existente.Recinto = estudiante.Recinto;
+            existente.CorreoInstitucional = estudiante.CorreoInstitucional;
+            existente.Celular = estudiante.Celular;
+            existente.Telefono = estudiante.Telefono;
+            existente.Direccion = estudiante.Direccion;
+            existente.FechaNacimiento = estudiante.FechaNacimiento;
+            existente.Genero = estudiante.Genero;
+            existente.Turno = estudiante.Turno;
+            existente.EstaBecado = estudiante.EstaBecado;
+            existente.PorcentajeBeca = estudiante.PorcentajeBeca;
+
+            TempData["Mensaje"] = "Datos del estudiante actualizados correctamente.";
+            return RedirectToAction(nameof(Lista));
+        }
+
+        public IActionResult Eliminar(string matricula)
+        {
+            if (string.IsNullOrEmpty(matricula))
+            {
+                TempData["Error"] = "Matrícula inválida.";
+                return RedirectToAction(nameof(Lista));
+            }
+
+            var estudiante = _estudiantes.FirstOrDefault(e => e.Matricula.Equals(matricula, StringComparison.OrdinalIgnoreCase));
+            if (estudiante != null)
+            {
+                _estudiantes.Remove(estudiante);
+                TempData["Mensaje"] = "Estudiante eliminado.";
+            }
+            else
+            {
+                TempData["Error"] = "Estudiante no encontrado.";
+            }
+
+            return RedirectToAction(nameof(Lista));
+        }
     }
 }
